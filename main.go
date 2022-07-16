@@ -1,19 +1,11 @@
-package WebGo
+package main
 
 import (
 	"fmt"
 	"net/http"
 )
 
-const portNumber = ":8080"
-
-func Home(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func About(w http.ResponseWriter, r *http.Request) {
-
-}
+const portNumber = ":8081"
 
 func main() {
 
