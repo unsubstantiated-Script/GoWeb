@@ -2,6 +2,7 @@ package render
 
 import (
 	"WebGo/pkg/config"
+	"WebGo/pkg/models"
 	"bytes"
 	"html/template"
 	"log"
@@ -77,7 +78,11 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+	return td
+}
+
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
 	var templateCache map[string]*template.Template
 	//Using caching on development vs production to allow for hot reloads
 	if app.UseCache {
@@ -97,7 +102,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 	// For finer grained error checking
 	buf := new(bytes.Buffer)
 
-	_ = t.Execute(buf, nil)
+	td = AddDefaultData(td)
+	
+	_ = t.Execute(buf, td)
 
 	// render the template
 	_, err := buf.WriteTo(w)
