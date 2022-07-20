@@ -1,6 +1,7 @@
 package render
 
 import (
+	"WebGo/pkg/config"
 	"bytes"
 	"html/template"
 	"log"
@@ -69,37 +70,44 @@ import (
 //	return nil
 //}
 
+var app *config.AppConfig
+
+//NewTemplates sets the config for the config package
+func NewTemplates(a *config.AppConfig) {
+	app = a
+}
+
 func RenderTemplate(w http.ResponseWriter, tmpl string) {
-	// create a template cache
-	templateCache, err := createTemplateCache()
-	//Killing program if no template returned
-	if err != nil {
-		log.Fatal(err)
+	var templateCache map[string]*template.Template
+	//Using caching on development vs production to allow for hot reloads
+	if app.UseCache {
+		// get the template cache from the app config
+
+		templateCache = app.TemplateCache
+	} else {
+		templateCache, _ = CreateTemplateCache()
 	}
 
 	// get requested template from cache
 	t, ok := templateCache[tmpl]
 	if !ok {
-		log.Fatal(err)
+		log.Fatal("Could not create template from Template Cache")
 	}
 
 	// For finer grained error checking
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, nil)
 
-	if err != nil {
-		log.Println(err)
-	}
+	_ = t.Execute(buf, nil)
 
 	// render the template
-	_, err = buf.WriteTo(w)
+	_, err := buf.WriteTo(w)
 	if err != nil {
 		log.Println(err)
 	}
 
 }
 
-func createTemplateCache() (map[string]*template.Template, error) {
+func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
 	// get all of the files that stat with *.page.tmpl
