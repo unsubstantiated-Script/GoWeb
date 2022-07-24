@@ -5,14 +5,30 @@ import (
 	"WebGo/pkg/handlers"
 	"WebGo/pkg/render"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"log"
 	"net/http"
+	"time"
 )
 
-const portNumber = ":8081"
+const portNumber = ":8080"
+
+var app config.AppConfig
+var session *scs.SessionManager
 
 func main() {
-	var app config.AppConfig
+
+	// Change to true when in production...
+	app.InProduction = false
+
+	session = scs.New()
+
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.InProduction
+
+	app.Session = session
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
@@ -21,7 +37,7 @@ func main() {
 
 	app.TemplateCache = tc
 	//Setting the template cache to be accessible
-	app.UseCache = false
+	app.UseCache = true
 
 	repo := handlers.NewRepo(&app)
 	handlers.NewHandlers(repo)
